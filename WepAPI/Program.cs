@@ -1,5 +1,8 @@
+using BusinessLayer;
 using DataAccessLayer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using WepAPI.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,6 +12,15 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 // DbContext ekle
 builder.Services.AddDbContext<Context>(options =>
     options.UseSqlServer(connectionString));
+
+builder.Services.AddAutoMapper(cfg =>
+{
+    cfg.AddProfile<MappingProfile>();
+});
+
+builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+
+builder.Services.AddScoped<IProductService, ProductService>();
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -27,6 +39,8 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
+
+app.UseMiddleware<ExceptionMiddleware>();
 
 app.MapControllers();
 
