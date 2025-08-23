@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using EntityLayer;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,19 +23,37 @@ namespace DataAccessLayer
             return entity;
         }
 
-        public async Task Delete(int id)
+        public async Task Delete(T entity)
         {
-            _context.Remove(id);
+            _context.Set<T>().Remove(entity);
+            await _context.SaveChangesAsync();
         }
 
-        public Task<List<T>> GetAll()
+        public async Task<List<T>> GetAll()
         {
-           return _context.Set<T>().ToListAsync();
+            return await _context.Set<T>().ToListAsync();
+        }
+
+        public async Task<PagedResult<T>> GetPaged(int pageNumber, int pageSize)
+        {
+            var totalCount = await _context.Set<T>().CountAsync();
+            var items = await _context.Set<T>()
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return new PagedResult<T>
+            {
+                Items = items,
+                TotalCount = totalCount,
+                PageNumber = pageNumber,
+                PageSize = pageSize
+            };
         }
 
         public async Task<T> GetById(int id)
         {
-            return await _context.Set<T>().FindAsync(id);   
+            return await _context.Set<T>().FindAsync(id);
         }
 
         public async Task<T> Update(T entity)

@@ -19,15 +19,19 @@ namespace WepAPI.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateProduct(CreateProductDto item)
         {
-            Console.WriteLine("fonksiyon başladı");
             var result = await _productService.Create(item);
             return Ok(result);
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAllProduct()
+        public async Task<IActionResult> GetAllProduct([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
-            var result = await _productService.GetAllProduct();
+            var paginationRequest = new PaginationRequest
+            {
+                PageNumber = pageNumber,
+                PageSize = pageSize
+            };
+            var result = await _productService.GetAllProductPaged(paginationRequest);
             return Ok(result);
         }
 
@@ -45,13 +49,11 @@ namespace WepAPI.Controllers
             return Ok("Ürün Başarıyla Silindi");
         }
 
-        //[HttpPut("{id}")]
-        //public IActionResult UpdateUser(int id, UpdateProductDto dto)
-        //{
-        //    var user = _productService.GetById(id);
-        //    if (user == null) return NotFound();
-        //    _productService.Update(user);
-        //    return NoContent();
-        //}
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateProduct(UpdateProductDto item)
+        {
+            var result = await _productService.Update(item);
+            return Ok(result);
+        }
     }
 }

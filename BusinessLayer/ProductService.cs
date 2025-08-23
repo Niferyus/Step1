@@ -13,15 +13,15 @@ namespace BusinessLayer
     {
         private readonly IGenericRepository<Product> _productRepository;
         private readonly IMapper _mapper;
-        public ProductService(IGenericRepository<Product> productRepository,IMapper mapper)
+        public ProductService(IGenericRepository<Product> productRepository, IMapper mapper)
         {
             _productRepository = productRepository;
             _mapper = mapper;
         }
         public async Task<CreateProductDto> Create(CreateProductDto item)
         {
-           var entity = _mapper.Map<Product>(item);
-           await _productRepository.Create(entity);
+            var entity = _mapper.Map<Product>(item);
+            await _productRepository.Create(entity);
             return item;
         }
 
@@ -32,8 +32,7 @@ namespace BusinessLayer
             {
                 throw new Exceptions.NotFoundException($"Product with id {id} not found.");
             }
-
-            await _productRepository.Delete(id);
+            await _productRepository.Delete(entity);
         }
 
         public async Task<List<ProductListDto>> GetAllProduct()
@@ -43,10 +42,24 @@ namespace BusinessLayer
             return productDtos;
         }
 
+        public async Task<PagedResult<ProductListDto>> GetAllProductPaged(PaginationRequest request)
+        {
+            var pagedProducts = await _productRepository.GetPaged(request.PageNumber, request.PageSize);
+            var productDtos = _mapper.Map<List<ProductListDto>>(pagedProducts.Items);
+
+            return new PagedResult<ProductListDto>
+            {
+                Items = productDtos,
+                TotalCount = pagedProducts.TotalCount,
+                PageNumber = pagedProducts.PageNumber,
+                PageSize = pagedProducts.PageSize
+            };
+        }
+
         public async Task<ProductDetailDto> GetById(int id)
         {
-            var entity = await _productRepository.GetById(id); 
-            if (entity == null) 
+            var entity = await _productRepository.GetById(id);
+            if (entity == null)
             {
                 throw new Exceptions.NotFoundException($"Product with id {id} not found.");
             }
@@ -56,7 +69,7 @@ namespace BusinessLayer
         public async Task<UpdateProductDto> Update(UpdateProductDto item)
         {
             var entity = _mapper.Map<Product>(item);
-            await _productRepository.Update(entity);                       
+            await _productRepository.Update(entity);
             var updatedDto = _mapper.Map<UpdateProductDto>(entity);
             return updatedDto;
         }

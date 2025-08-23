@@ -10,9 +10,10 @@ namespace DataAccessLayer
     public interface IGenericRepository<T> where T : class
     {
         Task<List<T>> GetAll();
+        Task<PagedResult<T>> GetPaged(int pageNumber, int pageSize);
         Task<T> GetById(int id);
-        Task<T> Create(T entity);        
+        Task<T> Create(T entity);
         Task<T> Update(T entity);
-        Task Delete(int id);
+        Task Delete(T entity);
     }
 }
